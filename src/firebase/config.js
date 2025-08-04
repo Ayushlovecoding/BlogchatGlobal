@@ -4,12 +4,12 @@ import {getAuth,GoogleAuthProvider} from "firebase/auth";
 
 
 const firebaseConfig = {
-  apiKey: `${process.env.REACT_APP_API_KEY}`,
-  authDomain: `${process.env.REACT_APP_AUTH_DOMAIN}`,
-  projectId: `${process.env.REACT_APP_PROJECT_ID}`,
-  storageBucket: `${process.env.REACT_APP_STORAGE_BUCKET}`,
-  messagingSenderId: `${process.env.REACT_APP_MESSAGING_SENDER_ID}`,
-  appId: `${process.env.REACT_APP_APP_ID}`
+  apiKey: "AIzaSyDYtamWDuBlKUCc1j6TnKhZeIoVH4i8X1I",
+  authDomain: "fastblog-9c41f.firebaseapp.com",
+  projectId: "fastblog-9c41f",
+  storageBucket: "fastblog-9c41f.firebasestorage.app",
+  messagingSenderId: "530339051451",
+  appId: "1:530339051451:web:3835ff97dba6cc7a4eb69e"
 };
 
 const app = initializeApp(firebaseConfig);
