@@ -9,7 +9,16 @@
     font-family: 'Poppins', sans-serif;
     text-decoration: none;
     list-style: none;
-    background-color:rgb(227, 204, 248)
+}
+
+/* Background GIF */
+body {
+    background-image: url('../public/background.gif');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+    min-height: 100vh;
 }
 
 main {
