@@ -22,7 +22,7 @@ export const HomePage = () => {
       ); 
     }
     getPosts();
-  }, [toggle]); // Changed from [postsRef, toggle] to just [toggle]
+  }, [postsRef,toggle]); // Changed from [postsRef, toggle] to just [toggle]
   
   return (
     <section>
