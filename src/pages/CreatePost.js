@@ -37,8 +37,8 @@ export const CreatePost = () => {
         <h1>Add new Post</h1>
       </div>
       <form  className="createPost" onSubmit={handleCreatePost}>
-        <input type="text" name="title" placeholder='title' maxLength='50' required />
-        <textarea type='text'name="description" className="description" placeholder='Description' maxLength='600' required></textarea>
+        <input className="title" type="text" name="title" placeholder='title' maxLength='50' required />
+        <textarea type='text' name="description" className="description" placeholder='Description' maxLength='600' required></textarea>
         <button type='submit' className='submit'>Create</button>
       </form>
     </section>

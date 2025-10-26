@@ -1,6 +1,7 @@
-import { doc, deleteDoc, updateDoc, arrayUnion, arrayRemove } from "firebase/firestore";
+import { doc, deleteDoc, updateDoc, arrayUnion, arrayRemove, addDoc, collection, getDocs, query, orderBy } from "firebase/firestore";
 import { auth, db } from "../firebase/config";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useSocket } from "../contexts/SocketContext";
 
 export const PostCard = ({post, toggle, setToggle}) => {
   const {id, title, description, author, reactions = {}} = post;
@@ -60,6 +61,85 @@ export const PostCard = ({post, toggle, setToggle}) => {
   const hasUserReacted = (type) => {
     if (!isAuth) return false;
     return userReactions[type]?.includes(auth.currentUser.uid) || false;
+  };
+
+  // Comments state + UI
+  const [commentsOpen, setCommentsOpen] = useState(false);
+  const [comments, setComments] = useState([]);
+  const [commentText, setCommentText] = useState('');
+  
+  // ✅ FIX: Get socket from the context object
+  const { socket } = useSocket();
+
+  useEffect(() => {
+    let mounted = true;
+
+    const handleRemoteComment = (payload) => {
+      if (!mounted) return;
+      if (payload?.postId !== id) return;
+      setComments((c) => [...c, payload.comment]);
+    };
+
+    // ✅ FIX: Add null check before using socket
+    if (socket && commentsOpen) {
+      socket.emit('joinPost', id);
+      socket.on('comment:new', handleRemoteComment);
+    }
+
+    return () => {
+      mounted = false;
+      // ✅ FIX: Add null check in cleanup
+      if (socket) {
+        socket.emit('leavePost', id);
+        socket.off('comment:new', handleRemoteComment);
+      }
+    };
+  }, [socket, commentsOpen, id]);
+
+  const fetchComments = async () => {
+    try {
+      const commentsRef = collection(db, 'post', id, 'comments');
+      const q = query(commentsRef, orderBy('createdAt', 'asc'));
+      const snap = await getDocs(q);
+      setComments(snap.docs.map(d => ({ id: d.id, ...d.data() })));
+    } catch (err) {
+      console.warn('Failed to fetch comments', err.message || err);
+    }
+  };
+
+  const handleToggleComments = async () => {
+    const next = !commentsOpen;
+    setCommentsOpen(next);
+    if (next) await fetchComments();
+  };
+
+  const handleAddComment = async () => {
+    if (!isAuth) return alert('Please login to comment');
+    if (!commentText.trim()) return;
+
+    const newComment = {
+      text: commentText.trim(),
+      author: { id: auth.currentUser.uid, name: auth.currentUser.displayName || 'Anonymous' },
+      createdAt: new Date().toISOString()
+    };
+
+    try {
+      // Persist to Firestore
+      const commentsRef = collection(db, 'post', id, 'comments');
+      await addDoc(commentsRef, newComment);
+
+      // ✅ FIX: Add null check before emitting
+      if (socket) {
+        socket.emit('comment:create', { postId: id, comment: newComment });
+      }
+
+      // Optimistically add locally
+      setComments((c) => [...c, newComment]);
+      setCommentText('');
+    } catch (err) {
+      console.error('Failed to add comment', err);
+      alert('Could not add comment');
+    }
   };
 
   return (
@@ -124,58 +204,47 @@ export const PostCard = ({post, toggle, setToggle}) => {
           </span>
         }
       </p>
+
+      {/* Comments section */}
+      <div className="comments">
+        <button className="btn" onClick={handleToggleComments} style={{marginTop:8,
+        backgroundColor: '#7c3aed',
+      color: '#fff',
+      border: 'none',
+      borderRadius: '8px',
+      padding: '10px 20px',
+      cursor: 'pointer',
+      boxShadow: '0 4px 12px rgba(124, 58, 237, 0.3)',
+      transition: 'all 0.2s ease'
+      }}>
+          {commentsOpen ? 'Hide Comments' : 'Show Comments'}
+        </button>
+
+        {commentsOpen && (
+          <div className="comments-area">
+            <div className="comments-list">
+              {comments.map((c, idx) => (
+                <div key={c.id || idx} className="comment">
+                  <strong>{c.author?.name || 'Unknown'}</strong>
+                  <p>{c.text}</p>
+                </div>
+              ))}
+              {comments.length === 0 && <p className="muted">No comments yet — be first!</p>}
+            </div>
+
+            <div className="comment-form">
+              <input
+                type="text"
+                placeholder="Write a comment..."
+                value={commentText}
+                onChange={(e) => setCommentText(e.target.value)}
+                style={{width:'80%'}}
+              />
+              <button className="btn" onClick={handleAddComment} style={{marginLeft:8}}>Send</button>
+            </div>
+          </div>
+        )}
+      </div>
     </div>
   )
 }
-
-
-// import { doc, deleteDoc } from "firebase/firestore";
-// import { auth, db } from "../firebase/config";
-
-// export const PostCard = ({post,toggle, setToggle}) => {
-//   const {id,title,description,author}=post;
-//   const isAuth = JSON.parse(localStorage.getItem("isAuth"));
-   
-//   async function handleDelete(){
-//       const document = doc(db, "post", id);
-//       await deleteDoc(document);
-//       setToggle(!toggle);
-//     }
-
-//   return (
-//     <div className='card'>
-//       <p className="title">{title}</p>
-//       <p className="description">{description}</p>
-//       <p className="control">
-//        <span className="author">{author.name}</span>
-//           { isAuth && (author.id === auth.currentUser.uid) && <span onClick={handleDelete} className="delete"><i className="bi bi-trash3"></i></span> }
-//       </p>
-//     </div>
-//   )
-// }
-
-
-
-
-
-
-// export const PostCard = ({post, toggle, setToggle}) => {
-//     const {id, title, description, author} = post;
-//     const isAuth = JSON.parse(localStorage.getItem("isAuth"));
-
-//     async function handleDelete(){
-//       const document = doc(db, "posts", id);
-//       await deleteDoc(document);
-//       setToggle(!toggle);
-//     }
-
-//   return (
-//     <div className="card">
-//         <p className="title">{title}</p>
-//         <p className="description">{description}</p>
-//         <p className="control">
-//             
-//         </p>
-//     </div>
-//   )
-// }

@@ -2,14 +2,17 @@
 import { Header, Footer } from './components';
 import { AllRoutes } from './routes/AllRoutes';
 import './App.css';
+import { SocketProvider } from './contexts/SocketContext';
 
 function App() {
   return (
-    <div className="App">
-      <Header />
-      <AllRoutes />
-      <Footer />
-    </div>
+    <SocketProvider>
+      <div className="App">
+        <Header />
+        <AllRoutes />
+        <Footer />
+      </div>
+    </SocketProvider>
   );
 }
 
