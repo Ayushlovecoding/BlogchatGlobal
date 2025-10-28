@@ -32,20 +32,20 @@ export const initSocket = async (getIdToken) => {
   });
 
   socket.on('connect', () => {
-    console.log('Socket connected:', socket.id);
+    // console.log('Socket connected:', socket.id);
   });
 
   socket.on('connect_error', (err) => {
     console.warn('Socket connect_error:', err.message || err);
     // Try to reconnect with polling if websocket fails
     if (socket.io.opts.transports.includes('websocket')) {
-      console.log('Falling back to polling transport');
+      // console.log('Falling back to polling transport');
       socket.io.opts.transports = ['polling'];
     }
   });
 
   socket.on('disconnect', (reason) => {
-    console.log('Socket disconnected:', reason);
+    // console.log('Socket disconnected:', reason);
   });
 
   return socket;

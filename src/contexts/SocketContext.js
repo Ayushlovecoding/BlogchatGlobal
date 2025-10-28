@@ -73,7 +73,7 @@ export const SocketProvider = ({ children }) => {
           });
 
           currentSocket.on('disconnect', (reason) => {
-            console.log('Socket disconnected:', reason);
+            // console.log('Socket disconnected:', reason);
             if (mounted) {
               setSocket(null);
               setOnlineUsers([]);
@@ -81,7 +81,7 @@ export const SocketProvider = ({ children }) => {
           });
 
           currentSocket.on('connect', () => {
-            console.log('Socket connected:', currentSocket.id);
+            // console.log('Socket connected:', currentSocket.id);
             if (mounted && auth.currentUser) {
               currentSocket.emit('user:connect', {
                 username: auth.currentUser.displayName || auth.currentUser.email
