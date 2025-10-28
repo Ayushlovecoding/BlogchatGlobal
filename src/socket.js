@@ -3,7 +3,7 @@ import { io } from 'socket.io-client';
 let socket = null;
 
 export const initSocket = async (getIdToken) => {
-  const url = process.env.REACT_APP_SOCKET_URL || 'http://localhost:4000';
+  const url = process.env.REACT_APP_SOCKET_URL || 'https://blogchatglobalbackend.onrender.com/';
   let token = null;
 
   try {
