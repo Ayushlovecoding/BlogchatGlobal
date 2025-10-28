@@ -2,22 +2,22 @@ import { PostCard } from '../components/PostCard';
 import { useTitle } from "../hooks/useTitle";
 import { getDocs, collection } from "firebase/firestore";
 import { useEffect, useState } from "react";
-import { db } from "../firebase/config";
-import { auth } from "../firebase/config";
+import { db, auth } from "../firebase/config"; // ✅ Combined import
 import Chat from "../components/Chat";
 import { useSocket } from "../contexts/SocketContext";
-import { onAuthStateChanged } from "firebase/auth"; // ✅ ADD THIS
+import { onAuthStateChanged } from "firebase/auth";
 
 export const HomePage = () => {
   const [posts, setPosts] = useState([]);
   const [toggle, setToggle] = useState(false);
   const [showChat, setShowChat] = useState(false);
-  const [currentUser, setCurrentUser] = useState(null); // ✅ ADD THIS
+  const [currentUser, setCurrentUser] = useState(null);
   const { connectUser } = useSocket();
+
   useTitle("Home");
   const postsRef = collection(db, "post");
 
-   // ✅ ADD THIS: Listen for auth state changes
+  // ✅ Listen for auth changes and connect socket
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       setCurrentUser(user);
@@ -30,28 +30,30 @@ export const HomePage = () => {
 
     return () => unsubscribe();
   }, [connectUser]);
-  
+
+  // ✅ Fetch posts
   useEffect(() => {
-    async function getPosts(){
+    async function getPosts() {
       const data = await getDocs(postsRef);
       setPosts(
         data.docs.map((document) => ({
           ...document.data(),
           id: document.id,
         }))
-      ); 
+      );
     }
     getPosts();
-  }, [postsRef,toggle]);
+  }, [toggle]); // remove postsRef
 
-  useEffect(() => {
-    if (auth.currentUser) {
-      connectUser({
-        username: auth.currentUser.displayName || auth.currentUser.email
-      });
-    }
-  }, [connectUser]);
-  
+  // ❌ REMOVE this block entirely
+  // useEffect(() => {
+  //   if (auth.currentUser) {
+  //     connectUser({
+  //       username: auth.currentUser.displayName || auth.currentUser.email
+  //     });
+  //   }
+  // }, [connectUser]);
+
   return (
     <div className="home-container">
       <section className="posts-section">
@@ -60,10 +62,10 @@ export const HomePage = () => {
         ))}
       </section>
 
-      {/* Chat Button and Panel */}
+      {/* ✅ Show chat only if user logged in */}
       {currentUser && (
         <>
-          <button 
+          <button
             className="chat-toggle-button"
             onClick={() => setShowChat(!showChat)}
             style={{
@@ -93,7 +95,7 @@ export const HomePage = () => {
           </button>
 
           {showChat && (
-            <div 
+            <div
               className="chat-panel"
               style={{
                 position: 'fixed',
@@ -114,8 +116,8 @@ export const HomePage = () => {
         </>
       )}
     </div>
-  )
-}
+  );
+};
 
 // import { PostCard } from '../components/PostCard';
 // import { useTitle } from "../hooks/useTitle";
