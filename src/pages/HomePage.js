@@ -44,7 +44,7 @@ export const HomePage = () => {
       );
     }
     getPosts();
-  }, [toggle]); // remove postsRef
+  }, [toggle]); //eslint-disable-line react-hooks/exhaustive-deps
 
   // ❌ REMOVE this block entirely
   // useEffect(() => {
