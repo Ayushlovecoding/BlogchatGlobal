@@ -6,15 +6,31 @@ import { db } from "../firebase/config";
 import { auth } from "../firebase/config";
 import Chat from "../components/Chat";
 import { useSocket } from "../contexts/SocketContext";
+import { onAuthStateChanged } from "firebase/auth"; // ✅ ADD THIS
 
 export const HomePage = () => {
   const [posts, setPosts] = useState([]);
   const [toggle, setToggle] = useState(false);
   const [showChat, setShowChat] = useState(false);
+  const [currentUser, setCurrentUser] = useState(null); // ✅ ADD THIS
   const { connectUser } = useSocket();
   useTitle("Home");
   const postsRef = collection(db, "post");
-    
+
+   // ✅ ADD THIS: Listen for auth state changes
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      setCurrentUser(user);
+      if (user) {
+        connectUser({
+          username: user.displayName || user.email
+        });
+      }
+    });
+
+    return () => unsubscribe();
+  }, [connectUser]);
+  
   useEffect(() => {
     async function getPosts(){
       const data = await getDocs(postsRef);
@@ -45,7 +61,7 @@ export const HomePage = () => {
       </section>
 
       {/* Chat Button and Panel */}
-      {auth.currentUser && (
+      {currentUser && (
         <>
           <button 
             className="chat-toggle-button"
@@ -92,7 +108,7 @@ export const HomePage = () => {
                 overflow: 'hidden'
               }}
             >
-              <Chat user={auth.currentUser} />
+              <Chat user={currentUser} />
             </div>
           )}
         </>

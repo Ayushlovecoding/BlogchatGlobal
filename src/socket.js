@@ -26,8 +26,9 @@ export const initSocket = async (getIdToken) => {
     withCredentials: true,
     transports: ['websocket', 'polling'],
     reconnection: true,
-    reconnectionAttempts: 5,
-    reconnectionDelay: 1000
+    reconnectionAttempts: 10,
+    reconnectionDelay: 2000,
+    timeout: 20000 // ✅ Increase timeout for slow Render startup
   });
 
   socket.on('connect', () => {
